@@ -1,0 +1,621 @@
+{% extends "orders/base.html" %}
+{% load static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block body %}
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://kit.fontawesome.com/b828253d90.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
+</head>
+<body style="background-color: #000211;">
+<body>
+
+{% block content %}
+<div class="tab-content" style="margin-bottom: 50px;">
+    <!-- Loop through categories and display all items within each category -->
+    {% for category in categories %}
+<div class="category">
+    <h2 class="category-content">{{ category.name }}</h2>
+</div>
+    <div class="row mt-4">
+        {% for item in items %}
+        {% if item.category == category %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center" style="border-radius: 20px; border-left: 2px solid #f9b132; border-right:2px solid #0a1a2a;background-color: #0a1a2a;" id="card-{{ item.id }}">
+                    <div class="form-group" style="display: flex; flex-direction: column; align-items: center; margin-bottom: 10px;">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}" class="card-img-top img-fluid card-image food-image" style="width: 300px; margin-bottom: 10px; border: 2px solid #0077ff; border-radius: 20px;">
+                        {% else %}
+                        <img src="{% static 'images/default_image.jpg' %}" alt="No image available" class="card-img-top img-fluid card-image">
+                        {% endif %}
+                        <h5 class="card-title mt-3" style="color: #abd5ff;">{{ item }}</h5>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter{{item.id}}">
+                        veiw student
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+<div class="modal fade" id="exampleModalCenter{{item.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <form action="{% url 'cart' %}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLongTitle">{{ item.category.name }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            {% csrf_token %}
+                            <div class="text-center mb-3">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="img-fluid">
+                                {% else %}
+                                <img src="{% static 'images/default_image.jpg' %}" alt="No image available" class="img-fluid">
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <input name="item_id" value="{{item.id}}" type="hidden"/>
+                                <div>{{ item }}</div>
+                            </div>
+                            <div class="form-group mt-3">
+                                <input type="hidden" name="card_id" value="{{ item.id }}">
+                                <button type="submit">save attend</button>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- end of modal -->
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+    
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // عند الضغط على علامة تبويب
+        document.querySelectorAll('.nav-link').forEach(function(tabLink) {
+            tabLink.addEventListener('click', function() {
+                const targetTabContent = document.querySelector(this.getAttribute('href'));
+                if (targetTabContent) {
+                    // تأخير التمرير للتأكد من التبديل إلى علامة التبويب الصحيحة أولاً
+                    setTimeout(function() {
+                        const firstSection = targetTabContent.querySelector('.row.mt-4');
+                        if (firstSection) {
+                            firstSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }, 300); // يمكنك تعديل التأخير حسب الحاجة
+                }
+            });
+        });
+    });
+</script>
+<!-- Fixed Bottom Navigation Bar -->
+<div class="fixed-bottom bg-dark d-flex justify-content-around py-2 nav-bar">
+    <a href="{% url 'cart' %}" class="btn nav-item position-relative" id="cart-link">
+        <i class="fas fa-shopping-cart" style="font-size: 2rem;"></i>
+        <span class="badge badge-pill badge-danger position-absolute top-0 start-100 translate-middle" id="cart-count" style="display: none; font-size: 20px;">0</span>
+    </a>
+</div>
+
+ <style>
+    .category {
+        position: relative; /* مهم لتحديد موضع العنصر الفرعي بشكل نسبي */
+        background-color: #0077ff;
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        border: 2px solid #f9b132;
+        padding: 10px;
+        border-radius: 50px 20px;
+        background-image: url("static/images/backimg.png");
+
+        overflow: hidden; /* لإخفاء الجزء الزائد من الخلفية */
+    }
+    
+    /* طبقة الخلفية */
+    .category::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url("static/images/backimg.png");
+        background-size: cover;
+        background-position: center;
+        filter: blur(100px); /* تطبيق البلور */
+        z-index: -1; /* لضمان بقاء الخلفية خلف النص */
+    }
+
+    .category h2{
+        font-size: 35px !important ;
+        font-weight: 900;
+
+        width: 100%;
+    }
+    .media a{
+        color: #f9b132 !important;
+        
+        font-size: 30px !important;
+        border: none;
+        margin-top: 20px;
+    }
+    .media{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+    }
+    .nav-name{
+        text-align: center;
+        font-size: 20px;
+        font-weight: 900;
+
+    }
+    .nav-logo   {
+        width: 20px;
+        height: 20px;
+        object-fit: cover;
+    }
+    .logo {
+    animation: moveUpDown 2s ease-in-out infinite;
+}
+
+@keyframes moveUpDown {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+</style>
+<style>
+.modal-content{
+    background-color: #0a1a2a;
+    color: #fff;
+    text-align: center;
+}
+.close{
+    color: #fff !important;
+    font-size: 20px ;
+}
+.modal-footer .btn {
+background-color: #f9b132 !important; 
+}
+.tab-navigation-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f1f1f1;
+}
+
+.nav-arrow {
+    background-color: #ccc;
+    border: none;
+    padding: 10px;  
+    cursor: pointer;
+}
+
+.nav-tabs {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    margin: 0 10px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border-radius: 50%;
+    color: rgb(255, 0, 0);
+    transition: background-color 0.3s ease;
+}
+.nav-lin{
+    background-color: #f9b132;
+
+}
+
+.nav-link.active {
+    background-color: #a32929;
+}
+
+.tab-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tab-icon {
+    width: 50px;
+    height: 50px;
+}
+
+.nav-link span {
+    margin-top: 5px;
+}
+.container {
+    width: 100%;
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+    margin-right: auto;
+    margin-left: auto;
+}
+.container .tab-content {
+    width: 100%;
+    padding-right: 15px !important;
+    padding-left: 15px !important;
+    margin-right: auto;
+    margin-left: auto;
+}
+.container .tab-navigation-wrapper{
+    width: 100%;
+    padding: 0px !important;
+    padding-bottom: 20px !important;
+    
+    background-color: #0a1a2a;
+    color: #fff !important;
+}
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+}
+.bc-img{
+    width: 100%;
+    height: auto;
+    padding-left: 0;
+}
+/* Your existing styles... */
+/* Fixed Bottom Navigation Styles */
+.fixed-bottom .btn-light {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.fixed-bottom .btn-light:hover {
+    opacity: 0.8;
+}
+
+/* Badge Styles */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5em 0.75em;
+    border-radius: 10px;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.position-absolute {
+    position: absolute;
+}
+
+.top-0 {
+    top: 0;
+}
+
+.start-100 {
+    left: 100%;
+}
+
+.translate-middle {
+    transform: translate(-50%, -50%);
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 16px rgba(0,0,0,0.2);
+}
+.card-body {
+    padding: 15px;
+}
+.card-image {
+    height: 120px;
+    border-radius: 15px;
+    object-fit: cover;
+    width:10rem;
+    height: auto;
+}
+/* Navigation Tabs Styles */
+.tab-navigation-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-bottom: 15px;
+}
+.nav-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+    border-bottom: 1px solid #0080ff;
+    width: calc(100% - 60px);
+}
+.nav-item {
+    flex: 0 0 auto;
+}
+.nav-link {
+    display: block;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 30px;
+    margin-right: 5px;
+
+}
+.nav-link.active {
+    background-color: #007bff;
+    color: #0e86ff !important;
+}
+.nav-link:hover {
+    background-color: #abd5ff;
+}
+.nav-arrow {
+    
+    border: none !important;
+    font-size: 1.5rem;
+    padding: 0 15px;
+    color: #2600ff;
+    cursor: pointer;
+}
+.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+    color: #495057;
+    background-color: #0a1a2a !important;
+    border-color: #dee2e6 #dee2e6 #f9b132;
+}
+#nav-arrow-left {
+    margin-right: 20px;
+}
+#nav-arrow-right {
+    margin-left: 20px;
+}
+
+/* Fixed Bottom Navigation Styles */
+.fixed-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1030;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+/* Fixed Bottom Navigation Styles */
+.btn-light{
+    background-color: #000000 !important;
+}
+.fixed-bottom .btn-light {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.fixed-bottom .btn-light:hover {
+    opacity: 0.8;
+}
+
+.fixed-bottom .fa-shopping-cart {
+    color: #ffffff !important; /* Green */
+}
+
+.fixed-bottom .fa-sign-out-alt {
+    color: #0a1a2a;; /* Red */
+}
+
+.fixed-bottom .fa-whatsapp {
+    color: #0a1a2a;; /* WhatsApp Green */
+}
+
+.fixed-bottom .fa-facebook {
+    color: #0a1a2a; /* Facebook Blue */
+}
+
+.fixed-bottom .fa-instagram {
+    color: #0a1a2a; /* Instagram Pink */
+}
+
+/* body {
+    animation: fadeIn 1s ease-in-out;
+} */
+
+.header {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    background-color: #f8f8f8;
+    font-family: 'Arial, sans-serif';
+    text-align: center;
+    direction: rtl;
+    margin: 0;
+    padding: 0;
+}
+
+.background-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+
+
+.h1 {
+    font-size: 2em;
+    text-align: center;
+}
+.navbar-light .navbar-toggler{
+    border-color: #f9b132;
+    
+}
+</style>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cartCountElement = document.getElementById('cart-count');
+        
+        // Fetch cart count from the server
+        function fetchCartCount() {
+            fetch("{% url 'cart_count' %}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.count > 0) {
+                        cartCountElement.textContent = data.count;
+                        cartCountElement.style.display = 'block';
+                    } else {
+                        cartCountElement.style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error fetching cart count:', error));
+        }
+    
+        // Initial fetch of cart count
+        fetchCartCount();
+    
+        // Update cart count when an item is added to the cart
+        document.querySelectorAll('.btn-primary').forEach(button => {
+            button.addEventListener('click', function() {
+                fetchCartCount();
+            });
+        });
+    
+        // Update cart count when an order is confirmed
+        document.querySelectorAll('.confirm-order-button').forEach(button => {
+            button.addEventListener('click', function() {
+                fetchCartCount();
+            });
+        });
+    });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const cartCountElement = document.getElementById('cart-count');
+
+    // Fetch cart count from the server
+    function fetchCartCount() {
+        fetch("{% url 'cart_count' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.count > 0) {
+                    cartCountElement.textContent = data.count;
+                    cartCountElement.style.display = 'block';
+                } else {
+                    cartCountElement.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error fetching cart count:', error));
+    }
+
+    // Initial fetch of cart count
+    fetchCartCount();
+
+    // Update cart count when an item is added to the cart
+    document.querySelectorAll('.btn-primary').forEach(button => {
+        button.addEventListener('click', function() {
+            fetchCartCount();
+        });
+    });
+
+    // Update cart count when an order is confirmed
+    document.querySelectorAll('.confirm-order-button').forEach(button => {
+        button.addEventListener('click', function() {
+            fetchCartCount();
+        });
+    });
+});
+
+    </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const tabList = document.getElementById('tab-list');
+
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    tabList.addEventListener('mousedown', (e) => {
+        isDown = true;
+        tabList.classList.add('active');
+        startX = e.pageX - tabList.offsetLeft;
+        scrollLeft = tabList.scrollLeft;
+    });
+
+    tabList.addEventListener('mouseleave', () => {
+        isDown = false;
+        tabList.classList.remove('active');
+    });
+
+    tabList.addEventListener('mouseup', () => {
+        isDown = false;
+        tabList.classList.remove('active');
+    });
+
+    tabList.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - tabList.offsetLeft;
+        const walk = (x - startX) * 3; //scroll-fast
+        tabList.scrollLeft = scrollLeft - walk;
+    });
+});
+</script>
+
+</body>
+{% endblock %}

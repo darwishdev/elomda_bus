@@ -1,0 +1,15 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+{{ block.super }}
+
+<div class="totals">
+    <h3>الإجمالي: {{ total_price }} جنيه</h3>
+    <h3>تفاصيل الطلبات:</h3>
+    <ul>
+        {% for item in item_counts %}
+            <li>{{ item.item_id }}: عدد المرات: {{ item.item_count }}، إجمالي السعر: {{ item.total_price }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
