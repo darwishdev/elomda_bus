@@ -14,6 +14,7 @@ import os
 
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,13 +23,25 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'i0&iq&e9u9h6(4_7%pt2s9)f=c$kso=k$c$w@fi9215s=1q0^d'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'i0&iq&e9u9h6(4_7%pt2s9)f=c$kso=k$c$w@fi9215s=1q0^d')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False  # تأكد من تعيينه إلى False عند التشغيل في الإنتاج
 
-ALLOWED_HOSTS = ['bus', 'elomdabus.exploremelon.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['elomdabus.exploremelon.com', 'localhost', '127.0.0.1']
 
+# إضافة إعدادات CSRF لتجنب الخطأ
+CSRF_TRUSTED_ORIGINS = ['https://elomdabus.exploremelon.com']  # السماح بالمصدر الموثوق
+CSRF_COOKIE_SECURE = True  # تفعيل الكوكيز الآمنة لـ CSRF
+CSRF_COOKIE_HTTPONLY = True  # الحماية من هجمات CSRF عبر JavaScript
+SESSION_COOKIE_SECURE = True  # تفعيل الكوكيز الآمنة للجلسات
+
+# تفعيل الأمان عند النشر
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_SSL_REDIRECT = True  # تفعيل التحويل إلى HTTPS
+SECURE_HSTS_SECONDS = 31536000  # تفعيل HSTS لمدة عام كامل
 
 # Application definition
 
@@ -43,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     # 'import_export',
 ]
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -50,6 +64,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # تأكد من وجود Middleware CSRF
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -124,3 +139,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# إضافة الإعدادات الخاصة بالتخزين الثابت والوسائط في بيئة الإنتاج
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
