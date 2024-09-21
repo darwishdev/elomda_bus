@@ -40,7 +40,7 @@ SESSION_COOKIE_SECURE = True  # تفعيل الكوكيز الآمنة للجل�
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
-SECURE_SSL_REDIRECT = True  # تفعيل التحويل إلى HTTPS
+SECURE_SSL_REDIRECT = False  # تفعيل التحويل إلى HTTPS
 SECURE_HSTS_SECONDS = 31536000  # تفعيل HSTS لمدة عام كامل
 
 # Application definition
