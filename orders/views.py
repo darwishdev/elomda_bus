@@ -50,7 +50,14 @@ def signup_view(request):
     return render(request, "orders/signup.html", {"form": form})
 
 def scan_qr(request):
+    print("hello")
     if request.method == 'POST':
+                        
+        # print(Item_List.objects.all()[0].id)
+        # # print(item_id)
+        # print('item_id')
+        
+        # return JsonResponse({'error': 'ahmed edit'})
         image_data = request.POST.get('image', None)
         if image_data:
             image_data = image_data.split(',')[1]
@@ -63,6 +70,10 @@ def scan_qr(request):
             if decoded_qrs:
                 qr_data = decoded_qrs[0].data.decode('utf-8')
                 item_id = qr_data.split(',')[0].split(':')[-1].strip()
+                
+                print(Item_List.objects.all())
+                print(item_id)
+                print('item_id')
                 item = get_object_or_404(Item_List, id=item_id)
                 response_data = {
                     'id': item.id,
@@ -74,7 +85,7 @@ def scan_qr(request):
                 }
                 return JsonResponse(response_data)
             else:
-                return JsonResponse({'error': 'QR code not recognized'})
+                return JsonResponse({'error': 'ahmed edit'})
     elif request.method == 'GET':
         return render(request, 'scan_qr.html')
     return JsonResponse({'error': 'Invalid request'})
@@ -140,3 +151,32 @@ def attendance_reset_view(request):
                 attendance_date=today
             )
     return render(request, 'attendance_page.html', {'attendance_list': Attendance.objects.filter(attendance_date=today)})
+ 
+ 
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Item_List
+
+def scan_qr_by_id(request):
+    if request.method == 'POST':
+        item_id = request.POST.get('item_id', None)
+        print(f"Received item_id: {item_id}")  # Debugging line
+        
+        if item_id:
+            try:
+                item = get_object_or_404(Item_List, id=item_id)
+                response_data = {
+                    'id': item.id,
+                    'name': item.name,
+                    'category': item.category.name,
+                    'subscription_start_date': item.subscription_start_date,
+                    'subscription_end_date': item.subscription_end_date,
+                    'image_url': item.image.url if item.image else None
+                }
+                print(f"Item found: {item.name}")  # Debugging line
+                return JsonResponse(response_data)
+            except Exception as e:
+                print(f"Error: {e}")  # Debugging line
+                return JsonResponse({'error': 'Item not found'})
+        else:
+            return JsonResponse({'error': 'Invalid item ID'})
