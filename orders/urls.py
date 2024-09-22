@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("signup", views.signup_view, name="signup"),
+    path('scan_qr_by_id/', views.scan_qr_by_id, name='scan_qr_by_id'),  # مسار لإدخال ID يدوي
     path('scan_qr/', views.scan_qr, name='scan_qr'),
     path('attendance/', views.attendance_view, name='attendance'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
