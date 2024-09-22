@@ -61,6 +61,18 @@
 
         <div style="text-align:center;width:100%">
             <h1 class="hedder">Elomda_Bus_Scaner</h1>
+
+            <form id="id-form" method="POST" action="{% url 'scan_qr_by_id' %}">
+                {% csrf_token %}
+                <input type="text" id="manual-id" name="item_id" placeholder="Enter ID" style="width: 80%; padding: 10px; margin-top: 20px;"/>
+                <center>
+                    <button class="but-34" type="submit" style="margin-top: 20px; margin-bottom:20px;">
+                        <b style="background-color: #007bff; color:#fff; padding:10px; ">Check by ID</b>
+                    </button>
+                </center>
+            </form>
+
+
             <center><video id="video" width="170" height="200" autoplay></video></center>
             
             <form id="scan-form" method="POST" action="{% url 'scan_qr' %}">
@@ -69,7 +81,7 @@
                 <center>
                     <button class="but-34" type="submit">
                         <b style="background-color: #007bff; color:#fff; padding:10px;">
-                            <i class="fa-solid fa-magnifying-glass" style="padding-right: 5px;"></i>Check QR
+                            <i class="fa-solid fa-magnifying-glass" style="padding-right: 5px;"></i>Check by QR
                         </b>
                     </button>
                 </center>
@@ -78,15 +90,7 @@
             <div id="result" style="margin-top: 20px;"></div>
 
             <!-- Input field for ID -->
-            <form id="id-form" method="POST" action="{% url 'scan_qr_by_id' %}">
-                {% csrf_token %}
-                <input type="text" id="manual-id" name="item_id" placeholder="Enter ID" style="width: 80%; padding: 10px; margin-top: 20px;"/>
-                <center>
-                    <button class="but-34" type="submit" style="margin-top: 10px;">
-                        <b style="background-color: #007bff; color:#fff; padding:10px;">Check by ID</b>
-                    </button>
-                </center>
-            </form>
+
 
             <form id="attendance-form" style="display:none;background-color:#007bff;padding-bottom:20px" method="POST" action="{% url 'attendance' %}">
                 {% csrf_token %}
@@ -193,10 +197,9 @@
                 <img src="${data.image_url}" alt="${data.name}'s Image" class="img-thumbnail" style="width: 180px; height: auto; margin-bottom: 10px;"/>
                 <p><strong>الكود:</strong> ${data.id}</p>
                 <p><strong>الاسم:</strong> ${data.name}</p>
-                <p><strong>السنه الدراسيه:</strong> ${data.category}</p>
-                <p><strong>تاريخ بدايه الاشتراك:</strong> ${data.subscription_start_date}</p>
-                <p><strong>تاريخ نهايه الاشتراك:</strong> ${data.subscription_end_date}</p>
+                <p><strong>الجامعه:</strong> ${data.category}</p>
                 <p><strong>نوع الباقه:</strong> متبقي ${remainingDays} يوم من ${totalDays} يوم</p>
+                
             `;
             resultDiv.innerHTML = table;
 
