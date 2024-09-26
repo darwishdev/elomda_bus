@@ -158,9 +158,10 @@ from django.shortcuts import get_object_or_404
 from .models import Item_List
 
 def scan_qr_by_id(request):
+    today = timezone.now().date()
     if request.method == 'POST':
         item_id = request.POST.get('item_id', None)
-        print(f"Received item_id: {item_id}")  # Debugging line
+        print(f"Received item_id: {item_id}") 
         
         if item_id:
             try:
