@@ -26,9 +26,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'i0&iq&e9u9h6(4_7%pt2s9)f=c$kso=k$c$w@fi9215s=1q0^d')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False  # تأكد من تعيينه إلى False عند التشغيل في الإنتاج
+DEBUG = True  # تأكد من تعيينه إلى False عند التشغيل في الإنتاج
 
-ALLOWED_HOSTS = ['elomdabus.exploremelon.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['elomdabus.exploremelon.com' , '192.168.1.6', 'localhost', '127.0.0.1']
 
 # إضافة إعدادات CSRF لتجنب الخطأ
 CSRF_TRUSTED_ORIGINS = ['https://elomdabus.exploremelon.com']  # السماح بالمصدر الموثوق
@@ -40,7 +40,7 @@ SESSION_COOKIE_SECURE = True  # تفعيل الكوكيز الآمنة للجل�
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
-SECURE_SSL_REDIRECT = False  # تفعيل التحويل إلى HTTPS
+SECURE_SSL_REDIRECT = False  
 SECURE_HSTS_SECONDS = 31536000  # تفعيل HSTS لمدة عام كامل
 
 # Application definition
