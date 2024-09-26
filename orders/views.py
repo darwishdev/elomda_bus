@@ -5,19 +5,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Sum, F
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import Http404
-import base64
-from django.shortcuts import render
-from io import BytesIO
+from django.utils import timezone
 from PIL import Image
+import base64
 import numpy as np
-import cv2
 from pyzbar import pyzbar
 import json
-from datetime import date, timedelta
-from django.utils import timezone
+from io import BytesIO  # تم إضافة الاستيراد الصحيح هنا
+from datetime import date
 from .models import Size, Category, Topping, Price_List, Item_List, Cart_List, Extra, Order, ImageSlider, Attendance
 
 def login_view(request):
@@ -27,7 +23,6 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            # توجيه المستخدم إلى صفحة الـ QR بعد تسجيل الدخول
             return HttpResponseRedirect(reverse("scan_qr"))
         else:
             return render(request, "orders/login.html", {"message": "Invalid credentials."})
@@ -50,30 +45,19 @@ def signup_view(request):
     return render(request, "orders/signup.html", {"form": form})
 
 def scan_qr(request):
-    print("hello")
     if request.method == 'POST':
-                        
-        # print(Item_List.objects.all()[0].id)
-        # # print(item_id)
-        # print('item_id')
-        
-        # return JsonResponse({'error': 'ahmed edit'})
         image_data = request.POST.get('image', None)
         if image_data:
             image_data = image_data.split(',')[1]
             image_bytes = base64.b64decode(image_data)
             image = Image.open(BytesIO(image_bytes))
             image_np = np.array(image)
-            gray_image = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
-            decoded_qrs = pyzbar.decode(gray_image)
+            gray_image = np.dot(image_np[...,:3], [0.2989, 0.5870, 0.1140])
+            decoded_qrs = pyzbar.decode(gray_image.astype(np.uint8))
 
             if decoded_qrs:
                 qr_data = decoded_qrs[0].data.decode('utf-8')
                 item_id = qr_data.split(',')[0].split(':')[-1].strip()
-                
-                print(Item_List.objects.all())
-                print(item_id)
-                print('item_id')
                 item = get_object_or_404(Item_List, id=item_id)
                 response_data = {
                     'id': item.id,
@@ -85,7 +69,7 @@ def scan_qr(request):
                 }
                 return JsonResponse(response_data)
             else:
-                return JsonResponse({'error': 'ahmed edit'})
+                return JsonResponse({'error': 'No QR code detected.'})
     elif request.method == 'GET':
         return render(request, 'scan_qr.html')
     return JsonResponse({'error': 'Invalid request'})
@@ -129,7 +113,6 @@ def attendance_view(request):
                         attendance_date=date.today()
                     )
                     messages.success(request, f"{data['name']} Attendance ({attendance_status}) recorded successfully!")
-
             except Exception as e:
                 messages.error(request, f"Error: {e}")
     
@@ -151,18 +134,11 @@ def attendance_reset_view(request):
                 attendance_date=today
             )
     return render(request, 'attendance_page.html', {'attendance_list': Attendance.objects.filter(attendance_date=today)})
- 
- 
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from .models import Item_List
 
 def scan_qr_by_id(request):
     today = timezone.now().date()
     if request.method == 'POST':
         item_id = request.POST.get('item_id', None)
-        print(f"Received item_id: {item_id}") 
-        
         if item_id:
             try:
                 item = get_object_or_404(Item_List, id=item_id)
@@ -174,10 +150,8 @@ def scan_qr_by_id(request):
                     'subscription_end_date': item.subscription_end_date,
                     'image_url': item.image.url if item.image else None
                 }
-                print(f"Item found: {item.name}")  # Debugging line
                 return JsonResponse(response_data)
             except Exception as e:
-                print(f"Error: {e}")  # Debugging line
                 return JsonResponse({'error': 'Item not found'})
         else:
             return JsonResponse({'error': 'Invalid item ID'})
