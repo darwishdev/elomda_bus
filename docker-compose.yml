@@ -1,0 +1,8 @@
+services:
+  web:
+    build: .
+    container_name: elomda_bus
+    ports:
+      - 8000:8000
+    image: elomda_bus
+

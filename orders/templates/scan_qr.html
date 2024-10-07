@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan QR Code</title>
+</head>
+<body>
+    
+    <style>
+        body{
+            background-color: #a1c6cc;
+            background-image: url("/media/qr_codes/bc2.jpg");
+            background-size:contain;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;            
+            min-height: 100vh; /* يجعل ارتفاع الجسم 100% من ارتفاع الشاشة */
+            margin: 0; /* إزالة الهوامش الافتراضية */
+        }
+        h1 {
+            color: #007bff;
+            text-align: center !important;
+            width: 100%;
+        }
+        #video {
+            width: 80%;
+            height: auto;
+            border: 3px solid #007bff;
+            border-radius: 30px;
+            margin-bottom: 30px;
+            background-color: #007bff;
+        }
+        .but-34 {
+            background-color: #fff;
+            color: #007bff;
+            border: none;
+            font-size: 25px;
+            padding: 5px;
+            border-radius: 20px;
+        }
+        b {
+            padding: 5px;
+        }
+        p {
+            background-color: #007bff;
+            color: #d9d9d9;
+            padding: 10px;
+        }
+        li {
+            margin: 10px;
+            padding: 10px;
+            color: #007bff;
+        }
+        #result {
+            background-color: #007bff4b;
+            color: #fff;
+            padding: 20px;
+        }
+        #result p {
+            color: #fff;
+        }
+        #manual-id{
+            border:6px solid #007bff;
+            border-radius: 50px;
+        }
+    </style>
+
+    <div style="height:100vh; background-color: #ffffff54;" class="main">
+        <form action="{% url 'logout' %}" method="POST" style="margin-bottom: 20px;">
+            {% csrf_token %}
+            <button class="but-34" type="submit" style="float: right; margin-bottom:10px; background-color:#007bff; color:#fff; padding:10px">تسجيل الخروج</button>
+        </form>
+
+        <div style="text-align:center;width:100%">
+            <h1 class="hedder">Elomda_Bus_Scaner</h1>
+
+
+
+
+            <center><video id="video" width="170" height="200" autoplay></video></center>
+            
+            <form id="scan-form" method="POST" action="{% url 'scan_qr' %}">
+                {% csrf_token %}
+                <input type="hidden" id="image" name="image" value="" >
+                <center>
+                    <button class="but-34" type="submit">
+                        <b style="background-color: #007bff; color:#fff; padding:10px;">
+                            <i class="fa-solid fa-magnifying-glass" style="padding-right: 5px;"></i>Check by QR
+                        </b>
+                    </button>
+                </center>
+            </form>
+
+            <form id="id-form" method="POST" action="{% url 'scan_qr_by_id' %}">
+                {% csrf_token %}
+                <input type="text" id="manual-id" name="item_id" placeholder="Enter ID" style="width: 80%; padding: 10px; margin-top: 20px;"/>
+                <center>
+                    <button class="but-34" type="submit" style="margin-top: 20px; margin-bottom:20px;">
+                        <b style="background-color: #007bff; color:#fff; padding:10px; ">Check by ID</b>
+                    </button>
+                </center>
+            </form>
+            <canvas id="canvas" style="display:none;background-color:#007bff"></canvas>
+            <div id="result" style="margin-top: 20px;"></div>
+
+            <!-- Input field for ID -->
+
+
+            <form id="attendance-form" style="display:none;background-color:#007bff;padding-bottom:20px" method="POST" action="{% url 'attendance' %}">
+                {% csrf_token %}
+                <input type="hidden" id="attendance_data" name="attendance_data" value="">
+                <select style="background-color: #fff;margin: 10px;padding: 10px;color: #007bff; width:30%; text-align:center;" id="attendance_status" name="attendance_status">
+                    <option value="حضور" name="attendance_status">حضور</option>
+                    <option value="انصراف" name="departure_status">انصراف</option>
+                </select>
+                <br><br><button class="but-34" style="width: 40%;" type="submit" id="attendance-btn">تسجيل</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const imageInput = document.getElementById('image');
+        const form = document.getElementById('scan-form');
+        const resultDiv = document.getElementById('result');
+        const attendanceForm = document.getElementById('attendance-form');
+        const attendanceDataInput = document.getElementById('attendance_data');
+
+        // عرض الكاميرا
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
+        .then(stream => {
+          const video = document.getElementById('video');
+          video.srcObject = stream;
+        })
+        .catch(err => console.error('Error accessing camera: ', err));
+
+        // Event listener for the QR scan form
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = canvas.toDataURL('image/png');
+            imageInput.value = imageData;
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams(new FormData(form))
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    resultDiv.innerHTML = `<p style="color: #007bff;">Error: ${data.error}</p>`;
+                } else {
+                    displayResult(data);
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = '<p style="color: red;">Error scanning QR Code</p>';
+                console.error('Error:', error);
+            });
+        });
+
+        // Event listener for the ID input form
+        const idForm = document.getElementById('id-form');
+        idForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const manualId = document.getElementById('manual-id').value;
+
+            fetch(idForm.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({ item_id: manualId })  // Changed to 'item_id'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    resultDiv.innerHTML = `<p style="color: #007bff;">Error: ${data.error}</p>`;
+                } else {
+                    displayResult(data);
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = '<p style="color: red;">Error retrieving data by ID</p>';
+                console.error('Error:', error);
+            });
+        });
+
+        // Function to display the result
+        function displayResult(data) {
+            const subscriptionStartDate = new Date(data.subscription_start_date);
+            const subscriptionEndDate = new Date(data.subscription_end_date);
+            const today = new Date();
+            const remainingDays = Math.ceil((subscriptionEndDate - today) / (1000 * 60 * 60 * 24));
+            const totalDays = Math.ceil((subscriptionEndDate - subscriptionStartDate) / (1000 * 60 * 60 * 24));
+
+            const table = `
+                <img src="${data.image_url}" alt="${data.name}'s Image" class="img-thumbnail" style="width: 180px; height: auto; margin-bottom: 10px;"/>
+                <p><strong>الكود:</strong> ${data.id}</p>
+                <p><strong>الاسم:</strong> ${data.name}</p>
+                <p><strong>الجامعه:</strong> ${data.category}</p>
+                <p><strong>نوع الباقه:</strong> متبقي ${remainingDays} يوم من ${totalDays} يوم</p>
+                
+            `;
+            resultDiv.innerHTML = table;
+
+            // Show attendance form after successful scan or ID input
+            attendanceForm.style.display = 'block';
+            attendanceDataInput.value = JSON.stringify(data);  // Store QR data or ID data in hidden input
+        }
+    </script>
+</body>
+</html>
+<!--   يييييييي -->
